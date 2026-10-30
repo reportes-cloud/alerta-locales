@@ -5,6 +5,12 @@ const fuentes = [
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
+// además de la consola, deja el resultado en la página de resumen de la ejecución
+function salida(texto) {
+  console.log(texto);
+  if (process.env.GITHUB_STEP_SUMMARY) require('fs').appendFileSync(process.env.GITHUB_STEP_SUMMARY, texto + '\n\n');
+}
+
 (async () => {
   for (const [nombre, url, marca] of fuentes) {
     try {
@@ -12,9 +18,9 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
       const html = await r.text();
       const avisos = html.split(marca).length - 1;
       const titulo = (/<title>([^<]*)/.exec(html) || [])[1] || '(sin título)';
-      console.log(`${nombre}: HTTP ${r.status} | avisos detectados: ${avisos} | título: ${titulo}`);
+      salida(`${nombre}: HTTP ${r.status} | avisos detectados: ${avisos} | título: ${titulo}`);
     } catch (e) {
-      console.log(`${nombre}: FALLÓ ${e.message}`);
+      salida(`${nombre}: FALLÓ ${e.message}`);
     }
   }
 })();
